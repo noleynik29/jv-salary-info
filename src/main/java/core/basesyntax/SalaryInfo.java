@@ -10,6 +10,7 @@ public class SalaryInfo {
     private static final int TOKEN_NAME = 1;
     private static final int TOKEN_HOURS = 2;
     private static final int TOKEN_RATE = 3;
+    private static final int EXPECTED_TOKENS = 4;
 
     public String getSalaryInfo(String[] names, String[] data, String dateFrom, String dateTo) {
         StringBuilder report = new StringBuilder("Report for period " + dateFrom + " - " + dateTo);
@@ -22,14 +23,20 @@ public class SalaryInfo {
 
             for (String record : data) {
                 String[] parts = record.split(" ");
-                if (parts.length != 4) {
+                if (parts.length != EXPECTED_TOKENS) {
                     continue;
                 }
 
                 LocalDate workDate = LocalDate.parse(parts[TOKEN_DATE], FORMATTER);
                 String employee = parts[TOKEN_NAME];
-                int hours = Integer.parseInt(parts[TOKEN_HOURS]);
-                int rate = Integer.parseInt(parts[TOKEN_RATE]);
+                int hours;
+                int rate;
+                try {
+                    hours = Integer.parseInt(parts[TOKEN_HOURS]);
+                    rate = Integer.parseInt(parts[TOKEN_RATE]);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
 
                 if (employee.equals(name)
                         && !workDate.isBefore(from)
