@@ -4,36 +4,44 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class SalaryInfo {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private static final int TOKEN_DATE = 0;
+    private static final int TOKEN_NAME = 1;
+    private static final int TOKEN_HOURS = 2;
+    private static final int TOKEN_RATE = 3;
+
     public String getSalaryInfo(String[] names, String[] data, String dateFrom, String dateTo) {
-        StringBuilder result = new StringBuilder("Report for period " + dateFrom + " - " + dateTo);
-        int [] salaries = new int [names.length];
+        StringBuilder report = new StringBuilder("Report for period " + dateFrom + " - " + dateTo);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        LocalDate from = LocalDate.parse(dateFrom, formatter);
-        LocalDate to = LocalDate.parse(dateTo, formatter);
+        LocalDate from = LocalDate.parse(dateFrom, FORMATTER);
+        LocalDate to = LocalDate.parse(dateTo, FORMATTER);
 
-        for (String record : data) {
-            String[] parts = record.split(" ");
-            LocalDate workDate = LocalDate.parse(parts[0], formatter);
-            String name = parts[1];
-            int hours = Integer.parseInt(parts[2]);
-            int rate = Integer.parseInt(parts[3]);
+        for (String name : names) {
+            int salary = 0;
 
-            if (!workDate.isBefore(from) && !workDate.isAfter(to)) {
-                for (int i = 0; i < names.length; i++) {
-                    if (names[i].equals(name)) {
-                        salaries[i] += hours * rate;
-                        break;
-                    }
+            for (String record : data) {
+                String[] parts = record.split(" ");
+                if (parts.length != 4) {
+                    continue;
+                }
+
+                LocalDate workDate = LocalDate.parse(parts[TOKEN_DATE], FORMATTER);
+                String employee = parts[TOKEN_NAME];
+                int hours = Integer.parseInt(parts[TOKEN_HOURS]);
+                int rate = Integer.parseInt(parts[TOKEN_RATE]);
+
+                if (employee.equals(name)
+                        && !workDate.isBefore(from)
+                        && !workDate.isAfter(to)) {
+                    salary += hours * rate;
                 }
             }
+
+            report.append(System.lineSeparator())
+                    .append(name).append(" - ").append(salary);
         }
 
-        for (int i = 0; i < names.length; i++) {
-            result.append(System.lineSeparator())
-                    .append(names[i]).append(" - ").append(salaries[i]);
-        }
-
-        return result.toString();
+        return report.toString();
     }
 }
